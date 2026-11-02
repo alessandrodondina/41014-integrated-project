@@ -1,0 +1,11 @@
+<mujoco model="41014 Test">
+  <option gravity="0 0 -9.81"/>
+  <worldbody>
+    <light pos="0 0 3"/>
+    <geom name="floor" type="plane" size="3 3 0.1" rgba="0.8 0.8 0.8 1"/>
+    <body name="test_robot" pos="0 0 0.2">
+      <freejoint/>
+      <geom type="box" size="0.15 0.1 0.1" rgba="0.2 0.5 0.9 1" mass="1"/>
+    </body>
+  </worldbody>
+</mujoco>
