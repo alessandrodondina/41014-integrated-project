@@ -10,6 +10,8 @@
     <material name="wheel_mat" rgba="0.12 0.12 0.14 1" />
     <material name="obstacle_mat" rgba="0.75 0.30 0.20 1" />
     <material name="dock_mat" rgba="0.15 0.65 0.35 1" />
+    <texture name="aruco_texture" type="2d" file="../assets/aruco_marker_0_mujoco.png" />
+    <material name="aruco_material" texture="aruco_texture" texuniform="false" specular="0" shininess="0" />
   </asset>
   <worldbody>
     <light name="main_light" pos="0 0 5" dir="0 0 -1" />
@@ -73,6 +75,9 @@
       <site name="lidar_ray_33" pos="0 0 0.09" size="0.005" quat="0.18301270 0.68301270 -0.18301270 0.68301270" rgba="1 0 0 0" />
       <site name="lidar_ray_34" pos="0 0 0.09" size="0.005" quat="0.12278780 0.69636424 -0.12278780 0.69636424" rgba="1 0 0 0" />
       <site name="lidar_ray_35" pos="0 0 0.09" size="0.005" quat="0.06162842 0.70441603 -0.06162842 0.70441603" rgba="1 0 0 0" />
+    </body>
+    <body name="aruco_station" pos="1.9 1.8 0.35">
+      <geom name="aruco_sign" type="box" size="0.005 0.12 0.12" material="aruco_material" contype="0" conaffinity="0" />
     </body>
   </worldbody>
   <actuator>
