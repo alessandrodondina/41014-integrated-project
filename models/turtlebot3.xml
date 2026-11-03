@@ -1,100 +1,120 @@
 <mujoco model="TurtleBot3 Navigation">
-  <compiler angle="radian"/>
-  <option timestep="0.005" gravity="0 0 -9.81"/>
-
+  <compiler angle="radian" />
+  <option timestep="0.005" gravity="0 0 -9.81" />
   <visual>
-    <global offwidth="1280" offheight="720"/>
+    <global offwidth="1280" offheight="720" />
   </visual>
-
   <asset>
-    <material name="floor_mat" rgba="0.78 0.80 0.83 1"/>
-    <material name="robot_mat" rgba="0.12 0.28 0.72 1"/>
-    <material name="wheel_mat" rgba="0.12 0.12 0.14 1"/>
-    <material name="obstacle_mat" rgba="0.75 0.30 0.20 1"/>
-    <material name="dock_mat" rgba="0.15 0.65 0.35 1"/>
+    <material name="floor_mat" rgba="0.78 0.80 0.83 1" />
+    <material name="robot_mat" rgba="0.12 0.28 0.72 1" />
+    <material name="wheel_mat" rgba="0.12 0.12 0.14 1" />
+    <material name="obstacle_mat" rgba="0.75 0.30 0.20 1" />
+    <material name="dock_mat" rgba="0.15 0.65 0.35 1" />
   </asset>
-
   <worldbody>
-    <light name="main_light" pos="0 0 5" dir="0 0 -1"/>
-
-    <camera name="overview" pos="0 -5 5"
-            xyaxes="1 0 0 0 0.7 0.7"/>
-
-    <geom name="floor" type="plane" size="5 5 0.1"
-          material="floor_mat" friction="1.2 0.005 0.0001"/>
-
-    <!-- Room boundaries -->
-    <geom name="wall_north" type="box"
-          pos="0 2.5 0.3" size="2.5 0.08 0.3"/>
-    <geom name="wall_south" type="box"
-          pos="0 -2.5 0.3" size="2.5 0.08 0.3"/>
-    <geom name="wall_east" type="box"
-          pos="2.5 0 0.3" size="0.08 2.5 0.3"/>
-    <geom name="wall_west" type="box"
-          pos="-2.5 0 0.3" size="0.08 2.5 0.3"/>
-
-    <!-- Obstacles -->
-    <geom name="obstacle_1" type="box"
-          pos="-0.6 -0.2 0.3" size="0.35 0.35 0.3"
-          material="obstacle_mat"/>
-
-    <geom name="obstacle_2" type="box"
-          pos="0.7 0.6 0.3" size="0.3 0.45 0.3"
-          material="obstacle_mat"/>
-
-    <geom name="obstacle_3" type="cylinder"
-          pos="0.9 -1.0 0.3" size="0.25 0.3"
-          material="obstacle_mat"/>
-
-    <!-- Charging station -->
-    <geom name="charging_station" type="box"
-          pos="1.9 1.8 0.05" size="0.35 0.3 0.05"
-          material="dock_mat" contype="0" conaffinity="0"/>
-
-    <!-- Simplified TurtleBot3 -->
+    <light name="main_light" pos="0 0 5" dir="0 0 -1" />
+    <camera name="overview" pos="0 -5 5" xyaxes="1 0 0 0 0.7 0.7" />
+    <geom name="floor" type="plane" size="5 5 0.1" material="floor_mat" friction="1.2 0.005 0.0001" />
+    <geom name="wall_north" type="box" pos="0 2.5 0.3" size="2.5 0.08 0.3" />
+    <geom name="wall_south" type="box" pos="0 -2.5 0.3" size="2.5 0.08 0.3" />
+    <geom name="wall_east" type="box" pos="2.5 0 0.3" size="0.08 2.5 0.3" />
+    <geom name="wall_west" type="box" pos="-2.5 0 0.3" size="0.08 2.5 0.3" />
+    <geom name="obstacle_1" type="box" pos="-0.6 -0.2 0.3" size="0.35 0.35 0.3" material="obstacle_mat" />
+    <geom name="obstacle_2" type="box" pos="0.7 0.6 0.3" size="0.3 0.45 0.3" material="obstacle_mat" />
+    <geom name="obstacle_3" type="cylinder" pos="0.9 -1.0 0.3" size="0.25 0.3" material="obstacle_mat" />
+    <geom name="charging_station" type="box" pos="1.9 1.8 0.05" size="0.35 0.3 0.05" material="dock_mat" contype="0" conaffinity="0" />
     <body name="turtlebot3" pos="-1.8 -1.8 0.09">
-      <freejoint name="base_free"/>
-
-      <geom name="chassis" type="cylinder"
-            size="0.12 0.045" mass="1.0"
-            material="robot_mat"
-            contype="0" conaffinity="0"/>
-
-      <geom name="front_indicator" type="box"
-            pos="0.10 0 0.035" size="0.025 0.035 0.012"
-            rgba="1 0.85 0.15 1"
-            contype="0" conaffinity="0"/>
-
+      <freejoint name="base_free" />
+      <geom name="chassis" type="cylinder" size="0.12 0.045" mass="1.0" material="robot_mat" contype="0" conaffinity="0" />
+      <geom name="front_indicator" type="box" pos="0.10 0 0.035" size="0.025 0.035 0.012" rgba="1 0.85 0.15 1" contype="0" conaffinity="0" />
       <body name="left_wheel" pos="0 0.105 -0.055">
-        <joint name="left_wheel_joint" type="hinge"
-               axis="0 1 0" damping="0.001"/>
-        <geom type="cylinder" size="0.045 0.018"
-              euler="1.5707963 0 0"
-              mass="0.08" material="wheel_mat"/>
+        <joint name="left_wheel_joint" type="hinge" axis="0 1 0" damping="0.001" />
+        <geom type="cylinder" size="0.045 0.018" euler="1.5707963 0 0" mass="0.08" material="wheel_mat" />
       </body>
-
       <body name="right_wheel" pos="0 -0.105 -0.055">
-        <joint name="right_wheel_joint" type="hinge"
-               axis="0 1 0" damping="0.001"/>
-        <geom type="cylinder" size="0.045 0.018"
-              euler="1.5707963 0 0"
-              mass="0.08" material="wheel_mat"/>
+        <joint name="right_wheel_joint" type="hinge" axis="0 1 0" damping="0.001" />
+        <geom type="cylinder" size="0.045 0.018" euler="1.5707963 0 0" mass="0.08" material="wheel_mat" />
       </body>
-
-      <!-- Sensor mounting points -->
-      <site name="lidar_mount" pos="0 0 0.09"
-            size="0.02" rgba="1 0.2 0.2 1"/>
-
-      <camera name="robot_camera" pos="0.10 0 0.06"
-              xyaxes="0 -1 0 0 0 1"
-              fovy="70"/>
+      <site name="lidar_mount" pos="0 0 0.09" size="0.02" rgba="1 0.2 0.2 1" />
+      <camera name="robot_camera" pos="0.10 0 0.06" xyaxes="0 -1 0 0 0 1" fovy="70" />
+      <site name="lidar_ray_00" pos="0 0 0.09" size="0.005" quat="0.00000000 0.70710678 0.00000000 0.70710678" rgba="1 0 0 0" />
+      <site name="lidar_ray_01" pos="0 0 0.09" size="0.005" quat="-0.06162842 0.70441603 0.06162842 0.70441603" rgba="1 0 0 0" />
+      <site name="lidar_ray_02" pos="0 0 0.09" size="0.005" quat="-0.12278780 0.69636424 0.12278780 0.69636424" rgba="1 0 0 0" />
+      <site name="lidar_ray_03" pos="0 0 0.09" size="0.005" quat="-0.18301270 0.68301270 0.18301270 0.68301270" rgba="1 0 0 0" />
+      <site name="lidar_ray_04" pos="0 0 0.09" size="0.005" quat="-0.24184476 0.66446302 0.24184476 0.66446302" rgba="1 0 0 0" />
+      <site name="lidar_ray_05" pos="0 0 0.09" size="0.005" quat="-0.29883624 0.64085638 0.29883624 0.64085638" rgba="1 0 0 0" />
+      <site name="lidar_ray_06" pos="0 0 0.09" size="0.005" quat="-0.35355339 0.61237244 0.35355339 0.61237244" rgba="1 0 0 0" />
+      <site name="lidar_ray_07" pos="0 0 0.09" size="0.005" quat="-0.40557979 0.57922797 0.40557979 0.57922797" rgba="1 0 0 0" />
+      <site name="lidar_ray_08" pos="0 0 0.09" size="0.005" quat="-0.45451948 0.54167522 0.45451948 0.54167522" rgba="1 0 0 0" />
+      <site name="lidar_ray_09" pos="0 0 0.09" size="0.005" quat="-0.50000000 0.50000000 0.50000000 0.50000000" rgba="1 0 0 0" />
+      <site name="lidar_ray_10" pos="0 0 0.09" size="0.005" quat="-0.54167522 0.45451948 0.54167522 0.45451948" rgba="1 0 0 0" />
+      <site name="lidar_ray_11" pos="0 0 0.09" size="0.005" quat="-0.57922797 0.40557979 0.57922797 0.40557979" rgba="1 0 0 0" />
+      <site name="lidar_ray_12" pos="0 0 0.09" size="0.005" quat="-0.61237244 0.35355339 0.61237244 0.35355339" rgba="1 0 0 0" />
+      <site name="lidar_ray_13" pos="0 0 0.09" size="0.005" quat="-0.64085638 0.29883624 0.64085638 0.29883624" rgba="1 0 0 0" />
+      <site name="lidar_ray_14" pos="0 0 0.09" size="0.005" quat="-0.66446302 0.24184476 0.66446302 0.24184476" rgba="1 0 0 0" />
+      <site name="lidar_ray_15" pos="0 0 0.09" size="0.005" quat="-0.68301270 0.18301270 0.68301270 0.18301270" rgba="1 0 0 0" />
+      <site name="lidar_ray_16" pos="0 0 0.09" size="0.005" quat="-0.69636424 0.12278780 0.69636424 0.12278780" rgba="1 0 0 0" />
+      <site name="lidar_ray_17" pos="0 0 0.09" size="0.005" quat="-0.70441603 0.06162842 0.70441603 0.06162842" rgba="1 0 0 0" />
+      <site name="lidar_ray_18" pos="0 0 0.09" size="0.005" quat="-0.70710678 0.00000000 0.70710678 0.00000000" rgba="1 0 0 0" />
+      <site name="lidar_ray_19" pos="0 0 0.09" size="0.005" quat="-0.70441603 -0.06162842 0.70441603 -0.06162842" rgba="1 0 0 0" />
+      <site name="lidar_ray_20" pos="0 0 0.09" size="0.005" quat="-0.69636424 -0.12278780 0.69636424 -0.12278780" rgba="1 0 0 0" />
+      <site name="lidar_ray_21" pos="0 0 0.09" size="0.005" quat="-0.68301270 -0.18301270 0.68301270 -0.18301270" rgba="1 0 0 0" />
+      <site name="lidar_ray_22" pos="0 0 0.09" size="0.005" quat="-0.66446302 -0.24184476 0.66446302 -0.24184476" rgba="1 0 0 0" />
+      <site name="lidar_ray_23" pos="0 0 0.09" size="0.005" quat="-0.64085638 -0.29883624 0.64085638 -0.29883624" rgba="1 0 0 0" />
+      <site name="lidar_ray_24" pos="0 0 0.09" size="0.005" quat="-0.61237244 -0.35355339 0.61237244 -0.35355339" rgba="1 0 0 0" />
+      <site name="lidar_ray_25" pos="0 0 0.09" size="0.005" quat="-0.57922797 -0.40557979 0.57922797 -0.40557979" rgba="1 0 0 0" />
+      <site name="lidar_ray_26" pos="0 0 0.09" size="0.005" quat="-0.54167522 -0.45451948 0.54167522 -0.45451948" rgba="1 0 0 0" />
+      <site name="lidar_ray_27" pos="0 0 0.09" size="0.005" quat="-0.50000000 -0.50000000 0.50000000 -0.50000000" rgba="1 0 0 0" />
+      <site name="lidar_ray_28" pos="0 0 0.09" size="0.005" quat="0.45451948 0.54167522 -0.45451948 0.54167522" rgba="1 0 0 0" />
+      <site name="lidar_ray_29" pos="0 0 0.09" size="0.005" quat="0.40557979 0.57922797 -0.40557979 0.57922797" rgba="1 0 0 0" />
+      <site name="lidar_ray_30" pos="0 0 0.09" size="0.005" quat="0.35355339 0.61237244 -0.35355339 0.61237244" rgba="1 0 0 0" />
+      <site name="lidar_ray_31" pos="0 0 0.09" size="0.005" quat="0.29883624 0.64085638 -0.29883624 0.64085638" rgba="1 0 0 0" />
+      <site name="lidar_ray_32" pos="0 0 0.09" size="0.005" quat="0.24184476 0.66446302 -0.24184476 0.66446302" rgba="1 0 0 0" />
+      <site name="lidar_ray_33" pos="0 0 0.09" size="0.005" quat="0.18301270 0.68301270 -0.18301270 0.68301270" rgba="1 0 0 0" />
+      <site name="lidar_ray_34" pos="0 0 0.09" size="0.005" quat="0.12278780 0.69636424 -0.12278780 0.69636424" rgba="1 0 0 0" />
+      <site name="lidar_ray_35" pos="0 0 0.09" size="0.005" quat="0.06162842 0.70441603 -0.06162842 0.70441603" rgba="1 0 0 0" />
     </body>
   </worldbody>
-
   <actuator>
-    <motor name="left_motor" joint="left_wheel_joint"
-           gear="1" ctrllimited="true" ctrlrange="-0.5 0.5"/>
-    <motor name="right_motor" joint="right_wheel_joint"
-           gear="1" ctrllimited="true" ctrlrange="-0.5 0.5"/>
+    <motor name="left_motor" joint="left_wheel_joint" gear="1" ctrllimited="true" ctrlrange="-0.5 0.5" />
+    <motor name="right_motor" joint="right_wheel_joint" gear="1" ctrllimited="true" ctrlrange="-0.5 0.5" />
   </actuator>
+  <sensor>
+    <rangefinder name="lidar_00" site="lidar_ray_00" cutoff="4.0" />
+    <rangefinder name="lidar_01" site="lidar_ray_01" cutoff="4.0" />
+    <rangefinder name="lidar_02" site="lidar_ray_02" cutoff="4.0" />
+    <rangefinder name="lidar_03" site="lidar_ray_03" cutoff="4.0" />
+    <rangefinder name="lidar_04" site="lidar_ray_04" cutoff="4.0" />
+    <rangefinder name="lidar_05" site="lidar_ray_05" cutoff="4.0" />
+    <rangefinder name="lidar_06" site="lidar_ray_06" cutoff="4.0" />
+    <rangefinder name="lidar_07" site="lidar_ray_07" cutoff="4.0" />
+    <rangefinder name="lidar_08" site="lidar_ray_08" cutoff="4.0" />
+    <rangefinder name="lidar_09" site="lidar_ray_09" cutoff="4.0" />
+    <rangefinder name="lidar_10" site="lidar_ray_10" cutoff="4.0" />
+    <rangefinder name="lidar_11" site="lidar_ray_11" cutoff="4.0" />
+    <rangefinder name="lidar_12" site="lidar_ray_12" cutoff="4.0" />
+    <rangefinder name="lidar_13" site="lidar_ray_13" cutoff="4.0" />
+    <rangefinder name="lidar_14" site="lidar_ray_14" cutoff="4.0" />
+    <rangefinder name="lidar_15" site="lidar_ray_15" cutoff="4.0" />
+    <rangefinder name="lidar_16" site="lidar_ray_16" cutoff="4.0" />
+    <rangefinder name="lidar_17" site="lidar_ray_17" cutoff="4.0" />
+    <rangefinder name="lidar_18" site="lidar_ray_18" cutoff="4.0" />
+    <rangefinder name="lidar_19" site="lidar_ray_19" cutoff="4.0" />
+    <rangefinder name="lidar_20" site="lidar_ray_20" cutoff="4.0" />
+    <rangefinder name="lidar_21" site="lidar_ray_21" cutoff="4.0" />
+    <rangefinder name="lidar_22" site="lidar_ray_22" cutoff="4.0" />
+    <rangefinder name="lidar_23" site="lidar_ray_23" cutoff="4.0" />
+    <rangefinder name="lidar_24" site="lidar_ray_24" cutoff="4.0" />
+    <rangefinder name="lidar_25" site="lidar_ray_25" cutoff="4.0" />
+    <rangefinder name="lidar_26" site="lidar_ray_26" cutoff="4.0" />
+    <rangefinder name="lidar_27" site="lidar_ray_27" cutoff="4.0" />
+    <rangefinder name="lidar_28" site="lidar_ray_28" cutoff="4.0" />
+    <rangefinder name="lidar_29" site="lidar_ray_29" cutoff="4.0" />
+    <rangefinder name="lidar_30" site="lidar_ray_30" cutoff="4.0" />
+    <rangefinder name="lidar_31" site="lidar_ray_31" cutoff="4.0" />
+    <rangefinder name="lidar_32" site="lidar_ray_32" cutoff="4.0" />
+    <rangefinder name="lidar_33" site="lidar_ray_33" cutoff="4.0" />
+    <rangefinder name="lidar_34" site="lidar_ray_34" cutoff="4.0" />
+    <rangefinder name="lidar_35" site="lidar_ray_35" cutoff="4.0" />
+  </sensor>
 </mujoco>
