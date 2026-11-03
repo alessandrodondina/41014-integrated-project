@@ -1,0 +1,100 @@
+<mujoco model="TurtleBot3 Navigation">
+  <compiler angle="radian"/>
+  <option timestep="0.005" gravity="0 0 -9.81"/>
+
+  <visual>
+    <global offwidth="1280" offheight="720"/>
+  </visual>
+
+  <asset>
+    <material name="floor_mat" rgba="0.78 0.80 0.83 1"/>
+    <material name="robot_mat" rgba="0.12 0.28 0.72 1"/>
+    <material name="wheel_mat" rgba="0.12 0.12 0.14 1"/>
+    <material name="obstacle_mat" rgba="0.75 0.30 0.20 1"/>
+    <material name="dock_mat" rgba="0.15 0.65 0.35 1"/>
+  </asset>
+
+  <worldbody>
+    <light name="main_light" pos="0 0 5" dir="0 0 -1"/>
+
+    <camera name="overview" pos="0 -5 5"
+            xyaxes="1 0 0 0 0.7 0.7"/>
+
+    <geom name="floor" type="plane" size="5 5 0.1"
+          material="floor_mat" friction="1.2 0.005 0.0001"/>
+
+    <!-- Room boundaries -->
+    <geom name="wall_north" type="box"
+          pos="0 2.5 0.3" size="2.5 0.08 0.3"/>
+    <geom name="wall_south" type="box"
+          pos="0 -2.5 0.3" size="2.5 0.08 0.3"/>
+    <geom name="wall_east" type="box"
+          pos="2.5 0 0.3" size="0.08 2.5 0.3"/>
+    <geom name="wall_west" type="box"
+          pos="-2.5 0 0.3" size="0.08 2.5 0.3"/>
+
+    <!-- Obstacles -->
+    <geom name="obstacle_1" type="box"
+          pos="-0.6 -0.2 0.3" size="0.35 0.35 0.3"
+          material="obstacle_mat"/>
+
+    <geom name="obstacle_2" type="box"
+          pos="0.7 0.6 0.3" size="0.3 0.45 0.3"
+          material="obstacle_mat"/>
+
+    <geom name="obstacle_3" type="cylinder"
+          pos="0.9 -1.0 0.3" size="0.25 0.3"
+          material="obstacle_mat"/>
+
+    <!-- Charging station -->
+    <geom name="charging_station" type="box"
+          pos="1.9 1.8 0.05" size="0.35 0.3 0.05"
+          material="dock_mat" contype="0" conaffinity="0"/>
+
+    <!-- Simplified TurtleBot3 -->
+    <body name="turtlebot3" pos="-1.8 -1.8 0.09">
+      <freejoint name="base_free"/>
+
+      <geom name="chassis" type="cylinder"
+            size="0.12 0.045" mass="1.0"
+            material="robot_mat"
+            contype="0" conaffinity="0"/>
+
+      <geom name="front_indicator" type="box"
+            pos="0.10 0 0.035" size="0.025 0.035 0.012"
+            rgba="1 0.85 0.15 1"
+            contype="0" conaffinity="0"/>
+
+      <body name="left_wheel" pos="0 0.105 -0.055">
+        <joint name="left_wheel_joint" type="hinge"
+               axis="0 1 0" damping="0.001"/>
+        <geom type="cylinder" size="0.045 0.018"
+              euler="1.5707963 0 0"
+              mass="0.08" material="wheel_mat"/>
+      </body>
+
+      <body name="right_wheel" pos="0 -0.105 -0.055">
+        <joint name="right_wheel_joint" type="hinge"
+               axis="0 1 0" damping="0.001"/>
+        <geom type="cylinder" size="0.045 0.018"
+              euler="1.5707963 0 0"
+              mass="0.08" material="wheel_mat"/>
+      </body>
+
+      <!-- Sensor mounting points -->
+      <site name="lidar_mount" pos="0 0 0.09"
+            size="0.02" rgba="1 0.2 0.2 1"/>
+
+      <camera name="robot_camera" pos="0.10 0 0.06"
+              xyaxes="0 -1 0 0 0 1"
+              fovy="70"/>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="left_motor" joint="left_wheel_joint"
+           gear="1" ctrllimited="true" ctrlrange="-0.5 0.5"/>
+    <motor name="right_motor" joint="right_wheel_joint"
+           gear="1" ctrllimited="true" ctrlrange="-0.5 0.5"/>
+  </actuator>
+</mujoco>
