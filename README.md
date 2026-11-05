@@ -155,3 +155,299 @@ Important outputs include:
 41014 Sensors and Control for Mechatronic Systems
 
 University of Technology Sydney — Spring 2026
+
+---
+
+## Mathematical Model and System Analysis
+
+### Differential-drive state-space model
+
+The robot is represented by the planar state vector
+
+    x = [px, py, theta]^T
+
+where px and py are the robot's position in the world frame and theta is its heading.
+
+The control input is
+
+    u = [v, omega]^T
+
+where v is forward linear velocity and omega is angular velocity.
+
+The nonlinear continuous-time model is
+
+    px_dot = v cos(theta)
+    py_dot = v sin(theta)
+    theta_dot = omega
+
+The wheel-speed relationships are
+
+    v = r (wr + wl) / 2
+    omega = r (wr - wl) / L
+
+where:
+
+- Wheel radius r = 0.045 m
+- Wheel separation L = 0.210 m
+- Left wheel angular speed wl in rad/s
+- Right wheel angular speed wr in rad/s
+
+The simulation uses a time step of 0.02 s.
+
+For a time interval dt, the midpoint discrete model is
+
+    ds = (dr + dl) / 2
+    dtheta = (dr - dl) / L
+
+    px_next = px + ds cos(theta + dtheta/2)
+    py_next = py + ds sin(theta + dtheta/2)
+    theta_next = wrap(theta + dtheta)
+
+This is the same motion model used for the EKF prediction.
+
+### Linearisation
+
+Linearising the continuous-time model about an operating state and input gives
+
+    delta_x_dot = A delta_x + B delta_u
+
+with
+
+    A = [0  0  -v sin(theta)]
+        [0  0   v cos(theta)]
+        [0  0   0           ]
+
+and
+
+    B = [cos(theta)  0]
+        [sin(theta)  0]
+        [0           1]
+
+The matrices depend on the robot's operating heading and forward speed.
+
+### Controllability
+
+The linearised system's controllability matrix is
+
+    C = [B, AB, A^2B]
+
+For nonzero forward speed, this matrix has rank 3, so the local linearisation is controllable.
+
+At zero forward speed, the rank falls to 2. This reflects the nonholonomic constraint: the differential-drive robot cannot move directly sideways.
+
+The robot can nevertheless reach different planar poses using sequences of forward motion and turning. Local linear controllability and nonlinear reachability are distinct concepts.
+
+### Observability
+
+Wheel encoders provide relative motion information but do not independently establish absolute world position.
+
+The camera observes a landmark at known coordinates (lx, ly).
+
+The range and bearing measurement model is
+
+    range = sqrt((lx-px)^2 + (ly-py)^2)
+
+    bearing = atan2(ly-py, lx-px) - theta
+
+The measurement Jacobian is
+
+    H = [-dx/range  -dy/range   0]
+        [ dy/q      -dx/q     -1]
+
+where
+
+    dx = lx - px
+    dy = ly - py
+    q = dx^2 + dy^2
+
+A single range-and-bearing observation supplies two independent measurement components for three unknown pose states. It does not determine the entire pose instantaneously.
+
+Combining observations over time with the robot motion model can make the full pose locally observable during suitable motion. Observability depends on the trajectory and measurement availability.
+
+When the marker is not visible, the EKF can continue predicting from wheel odometry, but uncertainty grows without absolute landmark corrections.
+
+## Coordinate Frames
+
+The system uses the following frames:
+
+- World frame: fixed MuJoCo environment coordinates.
+- Robot base frame: origin at the mobile robot centre; forward is +X and left is +Y.
+- Camera frame: attached to the robot, approximately 0.10 m forward of the base.
+- ArUco landmark frame: marker centre at world coordinates (1.9, 1.8).
+
+The camera detects marker corners in image pixel coordinates.
+
+The camera focal length is calculated from the vertical field of view and image height:
+
+    fy = (image_height / 2) / tan(vertical_FOV / 2)
+
+For the 640 x 480 image and 70-degree vertical field of view, the focal length is approximately 342.8 pixels.
+
+During docking, the known 0.20 m marker width and detected pixel width are used to estimate camera-to-marker distance.
+
+The camera offset is included when estimating range from the robot base.
+
+The image horizontal displacement determines the estimated bearing used for docking alignment.
+
+## EKF Design and Parameters
+
+The Extended Kalman Filter estimates
+
+    x_hat = [px, py, theta]^T
+
+The prediction step uses wheel-encoder displacement and the differential-drive motion model.
+
+The covariance prediction is
+
+    P_pred = F P F^T + Q
+
+where F is the motion-model Jacobian and Q represents process uncertainty.
+
+The camera correction uses the range-and-bearing measurement model:
+
+    innovation = z - h(x_hat)
+    S = H P H^T + R
+    K = P H^T S^-1
+
+    x_updated = x_pred + K innovation
+
+The bearing innovation is wrapped to the interval [-pi, pi].
+
+The covariance update uses the Joseph form for numerical stability.
+
+### Initial covariance
+
+    P0 = diag(0.10^2, 0.10^2, deg2rad(10)^2)
+
+### Process noise
+
+    Q = diag(0.01^2, 0.01^2, deg2rad(1)^2)
+
+### Measurement noise
+
+    R = diag(0.03^2, deg2rad(2)^2)
+
+These are initial engineering tuning values rather than parameters obtained from a full experimental noise-identification study.
+
+Reducing R causes the EKF to trust camera measurements more strongly. Increasing R causes the filter to rely more heavily on odometry.
+
+Increasing Q makes the predicted covariance grow faster and increases the relative influence of subsequent camera measurements.
+
+## Feedback Controller Design
+
+The integrated simulation uses a waypoint-based proportional feedback controller.
+
+For the active waypoint:
+
+    dx = goal_x - estimated_x
+    dy = goal_y - estimated_y
+
+    distance_error = sqrt(dx^2 + dy^2)
+    heading_error = wrap(atan2(dy, dx) - estimated_theta)
+
+The navigation commands are
+
+    v = min(0.18, 0.8 * distance_error)
+
+    omega = clip(2.0 * heading_error, -1.2, 1.2)
+
+If the heading error exceeds 45 degrees, forward movement is stopped so the robot can rotate towards the waypoint.
+
+The waypoint acceptance tolerance is 0.10 m in the integrated test.
+
+LiDAR checks the forward sector and prevents forward motion when a measured obstacle is closer than 0.28 m.
+
+The planned route contains six predefined waypoints.
+
+### Docking control
+
+After navigation, the robot aligns towards the known station location.
+
+The camera then supplies marker range and bearing measurements.
+
+The docking controller uses
+
+    v = clip(0.5 * (measured_range - 0.55), 0, 0.08)
+
+    omega = clip(1.5 * measured_bearing, -0.5, 0.5)
+
+Forward movement is stopped if the absolute measured bearing exceeds 15 degrees.
+
+The docking phase terminates when the measured range is at most 0.57 m.
+
+The controller stops safely if marker tracking is lost for more than ten consecutive frames or if the docking LiDAR threshold is exceeded.
+
+### Controller design limitations
+
+The gains were selected as practical initial values and validated in the nominal simulation.
+
+They have not yet been established as optimal through a systematic gain sweep.
+
+The controller uses the EKF estimated pose for waypoint navigation, not MuJoCo ground-truth pose. Ground truth is used to evaluate the final result.
+
+The implemented controller is proportional state feedback, not LQR.
+
+
+---
+
+---
+
+## Robustness Evaluation
+
+Three complete integrated trials were performed with different levels of Gaussian wheel-encoder measurement noise.
+
+The noise was independently added to each wheel's measured displacement at every simulation step. The random seeds were fixed to make the tests reproducible.
+
+| Encoder noise standard deviation | Outcome | Waypoints | Final marker distance | Localisation RMSE |
+|---|---|---|---|---|
+| 0 m | DOCKED | 6/6 | 0.574 m | 0.001 m |
+| 0.0005 m | DOCKED | 6/6 | 0.573 m | 0.101 m |
+| 0.002 m | CAMERA LOST | 6/6 | 0.609 m | 0.410 m |
+
+The localisation RMSE compares the EKF position estimate with MuJoCo ground truth over the recorded trajectory.
+
+### Discussion
+
+The nominal trial completed the full navigation and visual docking task.
+
+With 0.5 mm standard deviation encoder noise per wheel displacement, the system still docked successfully, but localisation error increased.
+
+With 2 mm standard deviation encoder noise, the robot completed all six waypoints but failed during camera-guided docking. The system stopped after losing camera tracking.
+
+This suggests that increasing odometry uncertainty can reduce the reliability of reaching a suitable visual docking pose.
+
+The EKF can reduce drift when the marker is visible, but camera corrections are unavailable during most of the navigation route. Consequently, errors can accumulate before the robot reaches the charging station.
+
+These three trials provide an initial robustness comparison, not a statistically comprehensive success-rate study.
+
+Possible improvements include additional landmarks, more frequent absolute localisation updates, innovation gating, adaptive measurement noise, and a camera-search or recovery manoeuvre when the marker is lost.
+
+Evidence:
+
+- `results/robustness_results.csv`
+- `results/robustness_comparison.png`
+
+Run the experiment using:
+
+    python tests/test_robustness.py
+
+## Individual Contribution
+
+This project was completed individually with approval to undertake the integrated project solo.
+
+The implementation includes the MuJoCo environment, simulated sensing, EKF localisation, feedback navigation, ArUco-guided docking, integration testing, robustness evaluation and project documentation.
+
+## Generative AI Declaration
+
+OpenAI ChatGPT was used to assist with software development, Python code generation, debugging, mathematical explanations, test design and documentation.
+
+Generated code and explanations were incorporated into the project and evaluated through local simulation tests. The reported experimental results were obtained from executing the submitted Python code.
+
+The use of generative AI is declared here in accordance with the subject's academic integrity requirements.
+
+## Demonstration Video
+
+A five-minute demonstration video will be linked here after recording.
+
+The video will show the integrated navigation and docking pipeline, EKF estimation and uncertainty, and a varied-condition trial.
+
