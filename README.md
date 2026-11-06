@@ -447,9 +447,9 @@ The use of generative AI is declared here in accordance with the subject's acade
 
 ## Demonstration Video
 
-A five-minute demonstration video will be linked here after recording.
+**[Watch the five-minute demonstration on YouTube](https://www.youtube.com/watch?v=fx832rGkaps)**
 
-The video will show the integrated navigation and docking pipeline, EKF estimation and uncertainty, and a varied-condition trial.
+The video demonstrates the complete TurtleBot3 navigation and docking pipeline in MuJoCo, including EKF localisation, state estimation and uncertainty, camera-guided docking, and robustness testing under varied encoder-noise conditions.
 
 
 ## EKF Process Noise Tuning Evaluation
