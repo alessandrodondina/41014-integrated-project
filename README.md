@@ -451,3 +451,23 @@ A five-minute demonstration video will be linked here after recording.
 
 The video will show the integrated navigation and docking pipeline, EKF estimation and uncertainty, and a varied-condition trial.
 
+
+## EKF Process Noise Tuning Evaluation
+
+Three process-noise configurations were evaluated using identical encoder noise (0.0005 m standard deviation per wheel displacement) and the same random seed.
+
+| Q scale | Outcome | Position RMSE | Maximum error | Final uncertainty |
+|---|---|---|---|---|
+| 1.0 | DOCKED | 0.1008 m | 0.2164 m | 0.1614 m |
+| 0.1 | DOCKED | 0.1011 m | 0.2164 m | 0.0726 m |
+| 0.01 | DOCKED | 0.1012 m | 0.2164 m | 0.0308 m |
+
+Reducing Q produced little change in localisation accuracy but substantially reduced the filter's reported uncertainty.
+
+The original Q was retained because it achieved the lowest measured RMSE in this comparison. The small RMSE differences do not establish that this configuration is statistically optimal.
+
+The results illustrate the trade-off between process-noise assumptions and covariance calibration. A full consistency analysis would require additional trials and evaluation of normalised estimation errors.
+
+Results are available in `results/ekf_tuning_results.csv` and `results/ekf_tuning_comparison.png`.
+
+Run the comparison using `python tests/test_ekf_tuning.py`.

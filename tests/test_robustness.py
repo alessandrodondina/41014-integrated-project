@@ -30,7 +30,7 @@ NOISE_LEVELS = [0.0, 0.0005, 0.002]
 def wrap(a):
     return np.arctan2(np.sin(a), np.cos(a))
 
-def run_trial(noise_std, seed):
+def run_trial(noise_std, seed, q_scale=1.0):
     rng = np.random.default_rng(seed)
 
     model = mujoco.MjModel.from_xml_path(
@@ -43,6 +43,8 @@ def run_trial(noise_std, seed):
         initial_state=(-1.8, -1.8, 0.0),
         wheel_base=WHEEL_BASE
     )
+
+    ekf.Q *= q_scale
 
     renderer = mujoco.Renderer(
         model, width=640, height=480
@@ -69,6 +71,8 @@ def run_trial(noise_std, seed):
     errors = []
     uncertainties = []
     trajectory = []
+    estimated_trajectory = []
+    covariance_history = []
 
     try:
         for step in range(12000):
@@ -256,6 +260,8 @@ def run_trial(noise_std, seed):
                 )
             )
             trajectory.append(true_xy)
+            estimated_trajectory.append(ekf.x[:2].copy())
+            covariance_history.append(ekf.P[:2, :2].copy())
 
     finally:
         renderer.close()
@@ -274,11 +280,17 @@ def run_trial(noise_std, seed):
             np.sqrt(np.mean(np.square(errors)))
             if errors else float("nan")
         ),
+        "max_localisation_error_m": (
+            float(np.max(errors))
+            if errors else float("nan")
+        ),
         "final_uncertainty_m": (
             uncertainties[-1]
             if uncertainties else float("nan")
         ),
-        "trajectory": np.array(trajectory)
+        "trajectory": np.array(trajectory),
+        "estimated_trajectory": np.array(estimated_trajectory),
+        "covariance_history": np.array(covariance_history)
     }
 
 results = []
@@ -359,3 +371,84 @@ plt.close()
 print("\nROBUSTNESS TEST COMPLETE")
 print("Saved results/robustness_results.csv")
 print("Saved results/robustness_comparison.png")
+
+
+
+# Real-data EKF validation: trajectory and uncertainty.
+trial = results[1]
+truth = trial["trajectory"]
+estimate = trial["estimated_trajectory"]
+covariances = trial["covariance_history"]
+
+position_error = np.linalg.norm(
+    truth - estimate, axis=1
+)
+position_uncertainty = np.sqrt(
+    np.trace(covariances, axis1=1, axis2=2)
+)
+
+fig, (ax1, ax2) = plt.subplots(
+    2, 1, figsize=(10, 9),
+    gridspec_kw={"height_ratios": [3, 1.3]}
+)
+
+ax1.plot(
+    truth[:, 0], truth[:, 1],
+    color="#2563eb", linewidth=2.5,
+    label="MuJoCo ground truth"
+)
+
+ax1.plot(
+    estimate[:, 0], estimate[:, 1],
+    color="#f97316", linestyle="--",
+    linewidth=2,
+    label="EKF estimate"
+)
+
+ax1.scatter(
+    LANDMARK[0], LANDMARK[1],
+    marker="*", s=220,
+    color="#7c3aed",
+    label="Charging station"
+)
+
+ax1.set_title(
+    "EKF Localisation — Ground Truth vs Estimate"
+)
+ax1.set_xlabel("X position (m)")
+ax1.set_ylabel("Y position (m)")
+ax1.set_aspect("equal", adjustable="box")
+ax1.grid(True, alpha=0.3)
+ax1.legend(loc="upper left")
+
+ax2.plot(
+    position_error,
+    color="#2563eb",
+    linewidth=2,
+    label="Actual position error"
+)
+
+ax2.plot(
+    position_uncertainty,
+    color="#f97316",
+    linestyle="--",
+    linewidth=2,
+    label="EKF predicted position uncertainty"
+)
+
+ax2.set_title(
+    "Localisation Error and Estimated Uncertainty"
+)
+ax2.set_xlabel("Simulation step")
+ax2.set_ylabel("Error / uncertainty (m)")
+ax2.grid(True, alpha=0.3)
+ax2.legend()
+
+fig.tight_layout()
+fig.savefig(
+    "results/ekf_truth_uncertainty.png",
+    dpi=180
+)
+plt.close(fig)
+
+print("Saved improved EKF validation figure.")
